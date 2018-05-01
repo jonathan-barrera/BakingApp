@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:layout_margin="8dp">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        card_view:cardCornerRadius="4dp"
+        card_view:cardElevation="2dp"
+        card_view:cardUseCompatPadding="true">
+
+        <TextView
+            android:textSize="32sp"
+            android:fontFamily="cursive"
+            android:id="@+id/recipe_name_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:text="Recipe name"
+            android:gravity="center"
+            />
+
+    </android.support.v7.widget.CardView>
+</LinearLayout>
