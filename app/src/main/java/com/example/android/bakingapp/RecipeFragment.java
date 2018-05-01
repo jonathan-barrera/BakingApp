@@ -88,21 +88,44 @@ public class RecipeFragment extends Fragment implements StepAdapter.StepAdapterO
     @Override
     public void onClick(Step step) {
         Intent intent = new Intent(getActivity(), StepActivity.class);
+        String place = checkStepIdPlace(step);
         intent.putExtra("Step", step);
+        intent.putExtra("Place", place);
         startActivityForResult(intent, 123);
+    }
+
+    // Method to check whether the step is the first or last, in which case the step activity
+    // should not display a "previous" button (first) or "next" button (last)
+    public String checkStepIdPlace(Step step) {
+        if (step.getId() == 0) {
+            return "first";
+        }
+        if (step.getId() == mRecipe.getSteps().size() - 1) {
+            return "last";
+        } else {
+            return "middle";
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        int stepId = data.getIntExtra("currentId", -1);
-        Timber.d("onactivityresult called, id is " + stepId);
-        if (stepId > -1) {
-            Step newStep = mRecipe.getSteps().get(stepId + 1);
-            Intent intent = new Intent(getActivity(), StepActivity.class);
-            intent.putExtra("Step", newStep);
-            startActivityForResult(intent, 123);
+        // Get the id of the last step seen
+        if (data != null) {
+            int stepId = data.getIntExtra("currentId", -1);
+            if (stepId > -1) {
+                Step newStep;
+                if (resultCode == 101) {
+                    newStep = mRecipe.getSteps().get(stepId + 1);
+                } else {
+                    // resultCode == 102
+                    newStep = mRecipe.getSteps().get(stepId - 1);
+                }
+                Intent intent = new Intent(getActivity(), StepActivity.class);
+                intent.putExtra("Step", newStep);
+                intent.putExtra("Place", checkStepIdPlace(newStep));
+                startActivityForResult(intent, 123);
+            }
         }
     }
 }
