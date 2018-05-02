@@ -1,6 +1,7 @@
 package com.example.android.bakingapp;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,8 +10,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.example.android.bakingapp.Adapters.StepAdapter;
 import com.example.android.bakingapp.Models.Ingredient;
 import com.example.android.bakingapp.Models.Recipe;
 import com.example.android.bakingapp.Models.Step;
@@ -20,15 +23,26 @@ import java.util.List;
 
 import timber.log.Timber;
 
-public class RecipeFragment extends Fragment implements StepAdapter.StepAdapterOnClickHandler {
+public class RecipeFragment extends Fragment {
 
     private Recipe mRecipe;
     private RecyclerView mRecyclerView;
     private StepAdapter mStepAdapter;
     private List<Ingredient> mIngredientList;
+    onItemClickListener mCallback;
 
     //Empty constructor
     public RecipeFragment(){}
+
+    public interface onItemClickListener {
+        void onStepSelected(Step step);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallback = (onItemClickListener) context;
+    }
 
     @Nullable
     @Override
@@ -44,7 +58,12 @@ public class RecipeFragment extends Fragment implements StepAdapter.StepAdapterO
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         // Instantiate StepAdapter and set it to recycler view
-        mStepAdapter = new StepAdapter(this);
+        mStepAdapter = new StepAdapter(new StepAdapter.StepAdapterOnClickHandler() {
+            @Override
+            public void onClick(Step step) {
+                mCallback.onStepSelected(step);
+            }
+        });
         mRecyclerView.setAdapter(mStepAdapter);
 
         // Get the Recipe object
@@ -85,47 +104,18 @@ public class RecipeFragment extends Fragment implements StepAdapter.StepAdapterO
         return rootView;
     }
 
-    @Override
-    public void onClick(Step step) {
-        Intent intent = new Intent(getActivity(), StepActivity.class);
-        String place = checkStepIdPlace(step);
-        intent.putExtra("Step", step);
-        intent.putExtra("Place", place);
-        startActivityForResult(intent, 123);
+    public void openStepFragment(Step step) {
+        StepFragment newStepFragment = new StepFragment();
+        newStepFragment.setStepInfo(step);
     }
 
-    // Method to check whether the step is the first or last, in which case the step activity
-    // should not display a "previous" button (first) or "next" button (last)
-    public String checkStepIdPlace(Step step) {
-        if (step.getId() == 0) {
-            return "first";
-        }
-        if (step.getId() == mRecipe.getSteps().size() - 1) {
-            return "last";
-        } else {
-            return "middle";
-        }
-    }
+//    @Override
+//    public void onClick(Step step) {
+//        Intent intent = new Intent(getActivity(), StepActivity.class);
+//        String place = checkStepIdPlace(step);
+//        intent.putExtra("Step", step);
+//        intent.putExtra("Place", place);
+//        startActivityForResult(intent, 123);
+//   }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // Get the id of the last step seen
-        if (data != null) {
-            int stepId = data.getIntExtra("currentId", -1);
-            if (stepId > -1) {
-                Step newStep;
-                if (resultCode == 101) {
-                    newStep = mRecipe.getSteps().get(stepId + 1);
-                } else {
-                    // resultCode == 102
-                    newStep = mRecipe.getSteps().get(stepId - 1);
-                }
-                Intent intent = new Intent(getActivity(), StepActivity.class);
-                intent.putExtra("Step", newStep);
-                intent.putExtra("Place", checkStepIdPlace(newStep));
-                startActivityForResult(intent, 123);
-            }
-        }
-    }
 }

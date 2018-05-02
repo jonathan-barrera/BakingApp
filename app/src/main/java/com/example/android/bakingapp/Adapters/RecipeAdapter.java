@@ -1,4 +1,4 @@
-package com.example.android.bakingapp;
+package com.example.android.bakingapp.Adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -7,12 +7,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Recipe;
+import com.example.android.bakingapp.R;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import timber.log.Timber;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdapterViewHolder> {
 

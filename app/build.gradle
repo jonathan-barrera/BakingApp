@@ -44,4 +44,7 @@ dependencies {
 
     // Dependency for Cardview
     implementation 'com.android.support:cardview-v7:26.1.0'
+
+    // Dependency for ExoPLayer
+    implementation 'com.google.android.exoplayer:exoplayer:r2.2.0'
 }

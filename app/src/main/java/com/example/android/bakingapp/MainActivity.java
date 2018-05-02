@@ -6,20 +6,18 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.example.android.bakingapp.Adapters.RecipeAdapter;
 import com.example.android.bakingapp.ApiUtils.ApiClient;
 import com.example.android.bakingapp.ApiUtils.ApiInterface;
 import com.example.android.bakingapp.Models.Recipe;
 
-import java.io.IOException;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity
