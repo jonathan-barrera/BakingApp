@@ -21,6 +21,8 @@ import timber.log.Timber;
 
 public class RecipeActivity extends AppCompatActivity
         implements StepAdapter.StepAdapterOnClickHandler, RecipeFragment.onItemClickListener{
+    //TODO fix bug where the activity crashes when the orientation changes for the tablet (only horizontal
+    // to vertical, vertical to horizontal works. why?
 
     // boolean to keep track of whether we are on a phone or a table
     private boolean mTwoPane;
@@ -37,13 +39,16 @@ public class RecipeActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
 
+        // Get the Recipe object
+        mRecipe = getIntent().getParcelableExtra("Recipe");
+
+        // Set the title in the actionbar
+        setTitle(mRecipe.getName());
+
         // If true, we are on a tablet
         if (findViewById(R.id.step_frag_frame_layout) != null) {
             mTwoPane = true;
             stepFragmentView = findViewById(R.id.step_frag_frame_layout);
-
-            // Get the Recipe Object
-            mRecipe = getIntent().getParcelableExtra("Recipe");
 
             // Create the Step fragment
             FragmentManager fragmentManager = getSupportFragmentManager();
@@ -66,9 +71,6 @@ public class RecipeActivity extends AppCompatActivity
             // Instantiate StepAdapter and set it to recycler view
             mStepAdapter = new StepAdapter(this);
             mRecyclerView.setAdapter(mStepAdapter);
-
-            // Get the Recipe object
-            mRecipe = getIntent().getParcelableExtra("Recipe");
 
             // Extract the Ingredient object from the Recipe object
             mIngredientList = mRecipe.getIngredients();

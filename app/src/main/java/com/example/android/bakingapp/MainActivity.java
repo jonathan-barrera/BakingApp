@@ -3,6 +3,7 @@ package com.example.android.bakingapp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
@@ -23,7 +24,6 @@ import timber.log.Timber;
 public class MainActivity extends AppCompatActivity
         implements RecipeAdapter.RecipeAdapterOnClickHandler{
 
-    @BindView(R.id.recipe_recycler_view)
     RecyclerView mRecyclerView;
 
     private RecipeAdapter mRecipeAdapter;
@@ -42,8 +42,17 @@ public class MainActivity extends AppCompatActivity
         // Set title to Recipes for this Activity
         setTitle("Recipes");
 
-        // Set a LayoutManager to the recyclerview
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if (findViewById(R.id.recipe_recycler_view_grid) == null) {
+            // Set a LayoutManager to the recyclerview
+            mRecyclerView = findViewById(R.id.recipe_recycler_view);
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        } else {
+            mRecyclerView = findViewById(R.id.recipe_recycler_view_grid);
+            // We are looking at the table, make a grid view layout
+            GridLayoutManager layoutManager = new GridLayoutManager(this,
+                    3, GridLayoutManager.VERTICAL, false);
+            mRecyclerView.setLayoutManager(layoutManager);
+        }
 
         // Initialize Adapter and set to Recyclerview
         mRecipeAdapter = new RecipeAdapter(this);

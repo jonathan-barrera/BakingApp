@@ -51,10 +51,13 @@ public class StepActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         // Initialize the player view.
-        mPlayerView = (SimpleExoPlayerView) findViewById(R.id.exo_player_view);
+        mPlayerView = findViewById(R.id.exo_player_view);
 
         // Get the Step object
         mCurrentStep = getIntent().getParcelableExtra("Step");
+
+        // Set the title in the action bar
+        setTitle(mCurrentStep.getShortDescription());
 
         // Get the placement
         mPlace = getIntent().getStringExtra("Place");
@@ -65,13 +68,21 @@ public class StepActivity extends AppCompatActivity {
             mNextButton.setVisibility(View.INVISIBLE);
         }
 
+        // Set the description (extract data from Step object)
         mStepDescTextView.setText(mCurrentStep.getDescription());
 
-        // Initialize the Media Session.
-        initializeMediaSession();
+        // Extract Videolink from the CurrentStep object
+        String videoUrlString = mCurrentStep.getVideoURL();
 
-        // Initialize the player.
-        initializePlayer(Uri.parse("https://d17h27t6h515a5.cloudfront.net/topher/2017/April/590129ad_17-frost-all-around-cake-yellow-cake/17-frost-all-around-cake-yellow-cake.mp4"));
+        if (videoUrlString != null && !videoUrlString.equals("")) {
+            // Initialize the Media Session.
+            initializeMediaSession();
+
+            // Initialize the player.
+            initializePlayer(Uri.parse(videoUrlString));
+        } else {
+            mPlayerView.setVisibility(View.GONE);
+        }
 
     }
 
@@ -157,9 +168,11 @@ public class StepActivity extends AppCompatActivity {
      * Release ExoPlayer.
      */
     private void releasePlayer() {
-        mExoPlayer.stop();
-        mExoPlayer.release();
-        mExoPlayer = null;
+        if (mExoPlayer != null) {
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
     }
 
     private void initializePlayer(Uri mediaUri) {
@@ -174,7 +187,7 @@ public class StepActivity extends AppCompatActivity {
             //mExoPlayer.addListener(this);
 
             // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(this, "ExoPlayerPractice");
+            String userAgent = Util.getUserAgent(this, "BakingApp");
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     this, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);

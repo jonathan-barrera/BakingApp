@@ -21,8 +21,11 @@
         <activity
             android:name=".RecipeActivity"
             android:label="@string/title_activity_recipe"
-            android:theme="@style/AppTheme" />
-        <activity android:name=".StepActivity"></activity>
+            android:theme="@style/AppTheme"
+            android:parentActivityName=".MainActivity"
+            android:launchMode="singleTop"/>
+        <activity android:name=".StepActivity"
+            android:parentActivityName=".RecipeActivity" />
     </application>
 
 </manifest>
