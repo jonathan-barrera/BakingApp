@@ -161,7 +161,7 @@ public class StepActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         releasePlayer();
-        mMediaSession.setActive(false);
+        if (mMediaSession != null) mMediaSession.setActive(false);
     }
 
     /**
@@ -193,5 +193,31 @@ public class StepActivity extends AppCompatActivity {
             mExoPlayer.prepare(mediaSource);
             mExoPlayer.setPlayWhenReady(false);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mExoPlayer != null) {
+            // pause the video if the app loses focus
+            mExoPlayer.setPlayWhenReady(false);
+        }
+    }
+
+    // After rotation, continue playing video
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        long position = savedInstanceState.getLong("ExoPlayerPosition");
+        mExoPlayer.seekTo(position);
+        mExoPlayer.setPlayWhenReady(true);
+    }
+
+    // Save the position of the video on rotate
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        long position = mExoPlayer.getCurrentPosition();
+        outState.putLong("ExoPlayerPosition", position);
     }
 }

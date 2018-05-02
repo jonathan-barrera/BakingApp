@@ -36,6 +36,7 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Timber.d("recipe activity oncreate called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
 
@@ -160,17 +161,4 @@ public class RecipeActivity extends AppCompatActivity
                 .replace(R.id.step_frag_frame_layout, newStepFragment).commit();
     }
 
-//    @Override
-//    public void onStepSelected(int position) {
-//        Step step = mRecipe.getSteps().get(position);
-//        if (mTwoPane) {
-//
-//        } else {
-//            Intent intent = new Intent(this, StepActivity.class);
-//            String place = checkStepIdPlace(step);
-//            intent.putExtra("Step", step);
-//            intent.putExtra("Place", place);
-//            startActivityForResult(intent, 123);
-//        }
-//    }
 }

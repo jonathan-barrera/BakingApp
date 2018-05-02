@@ -30,7 +30,7 @@
             android:paddingRight="24dp"
             android:paddingBottom="8dp"
             tools:text="Ingredients List"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="italic"
             />
 

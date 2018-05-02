@@ -39,6 +39,7 @@ public class StepFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Timber.d("step fragment oncreate called");
         // Inflate the layout
         View rootView = inflater.inflate(R.layout.fragment_step, container, false);
 
@@ -56,21 +57,22 @@ public class StepFragment extends Fragment {
 //
 //        mCurrentStep = getActivity().getIntent().getParcelableExtra("Step");
 
-        String videoUrlString = mCurrentStep.getVideoURL();
-        if (videoUrlString != null && !videoUrlString.equals("")) {
-            // Initialize the Media Session.
-            initializeMediaSession();
+        if (mCurrentStep != null) {
+            String videoUrlString = mCurrentStep.getVideoURL();
+            if (videoUrlString != null && !videoUrlString.equals("")) {
+                // Initialize the Media Session.
+                initializeMediaSession();
 
-            // Initialize the player.
-            initializePlayer(Uri.parse(videoUrlString));
-        } else {
-            mPlayerView.setVisibility(View.GONE);
+                // Initialize the player.
+                initializePlayer(Uri.parse(videoUrlString));
+            } else {
+                mPlayerView.setVisibility(View.GONE);
+            }
+
+            // Set the description to the text view
+            stepDescription.setText(mCurrentStep.getDescription());
         }
-
-        // Set the description to the text view
-        stepDescription.setText(mCurrentStep.getDescription());
-
-        return rootView;
+            return rootView;
     }
 
     public void setStepInfo(Step step) {
@@ -156,6 +158,15 @@ public class StepFragment extends Fragment {
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
+            mExoPlayer.setPlayWhenReady(false);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mExoPlayer != null) {
+            // Pause the video if the app loses focus
             mExoPlayer.setPlayWhenReady(false);
         }
     }

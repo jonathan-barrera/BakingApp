@@ -8,13 +8,13 @@
 
     <com.google.android.exoplayer2.ui.SimpleExoPlayerView
         android:id="@+id/exo_player_view_frag"
-        app:resize_mode="fit"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:resize_mode="fit"/>
 
         <TextView
-            android:padding="16dp"
-            android:textSize="18sp"
+            android:padding="24dp"
+            android:textSize="24sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/step_frag_desc_text_view"
