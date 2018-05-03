@@ -25,29 +25,37 @@ public class RecipeActivity extends AppCompatActivity
     // boolean to keep track of whether we are on a phone or a table
     private boolean mTwoPane;
 
+    // Keys
+    private static final String INSTANCE_STATE_KEY = "last-step";
+    public static final String INTENT_EXTRA_STEP_KEY = "step-key";
+    public static final String INTENT_EXTRA_PLACE_KEY = "place-key";
+    public static final String PLACE_ID_FIRST = "place-first";
+    public static final String PLACE_ID_MIDDLE = "place-middle";
+    public static final String PLACE_ID_LAST = "place-last";
+
     // member variables
     private RecyclerView mRecyclerView;
     private StepAdapter mStepAdapter;
     private Recipe mRecipe;
     private List<Ingredient> mIngredientList;
+    private Step mLastStepClicked;
 
     View stepFragmentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Timber.d("recipe activity oncreate called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
 
         // Get the Recipe object
-        mRecipe = getIntent().getParcelableExtra("Recipe");
+        mRecipe = getIntent().getParcelableExtra(MainActivity.INTENT_EXTRA_RECIPE_KEY);
 
         // Set the title in the actionbar along with number of servings
         String title;
         if (mRecipe.getServings().equals("")) {
             title = mRecipe.getName();
         } else {
-            title = mRecipe.getName() + " (" + mRecipe.getServings() + " servings)";
+            title = mRecipe.getName() + " (" + mRecipe.getServings() + getString(R.string.servings) + ")";
         }
         setTitle(title);
 
@@ -59,11 +67,18 @@ public class RecipeActivity extends AppCompatActivity
             // Create the Step fragment
             FragmentManager fragmentManager = getSupportFragmentManager();
             StepFragment stepFragment = new StepFragment();
-            stepFragment.setStepInfo(mRecipe.getSteps().get(0));
+
+            // If possible, have the step fragment show the last viewed step
+            if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_STATE_KEY)) {
+                mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
+                stepFragment.setStepInfo(mLastStepClicked);
+            } else {
+                // otherwise, show the first step by default
+                stepFragment.setStepInfo(mRecipe.getSteps().get(0));
+            }
             fragmentManager.beginTransaction()
                     .add(R.id.step_frag_frame_layout, stepFragment)
                     .commit();
-
 
         } else {
             // We are on a phone or tablet in portrait mode
@@ -115,25 +130,22 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     public void onClick(Step step) {
-        if (mTwoPane) {
-            Timber.d("onclick works for tablet");
-        } else {
-            Intent intent = new Intent(this, StepActivity.class);
-            String place = checkStepIdPlace(step);
-            intent.putExtra("Step", step);
-            intent.putExtra("Place", place);
-            startActivityForResult(intent, 123);
-        }
+        Intent intent = new Intent(this, StepActivity.class);
+        String place = checkStepIdPlace(step);
+        intent.putExtra(INTENT_EXTRA_STEP_KEY, step);
+        intent.putExtra(INTENT_EXTRA_PLACE_KEY, place);
+        startActivityForResult(intent, 123);
     }
 
+    // Check whether the step is the first, the last, or in the middle
     public String checkStepIdPlace(Step step) {
         if (step.getId() == 0) {
-            return "first";
+            return PLACE_ID_FIRST;
         }
         if (step.getId() == mRecipe.getSteps().size() - 1) {
-            return "last";
+            return PLACE_ID_LAST;
         } else {
-            return "middle";
+            return PLACE_ID_MIDDLE;
         }
     }
 
@@ -142,7 +154,7 @@ public class RecipeActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         // Get the id of the last step seen
         if (data != null) {
-            int stepId = data.getIntExtra("currentId", -1);
+            int stepId = data.getIntExtra(StepActivity.INTENT_EXTRA_CURRENT_ID_KEY, -1);
             if (stepId > -1) {
                 Step newStep;
                 if (resultCode == 101) {
@@ -152,8 +164,8 @@ public class RecipeActivity extends AppCompatActivity
                     newStep = mRecipe.getSteps().get(stepId - 1);
                 }
                 Intent intent = new Intent(this, StepActivity.class);
-                intent.putExtra("Step", newStep);
-                intent.putExtra("Place", checkStepIdPlace(newStep));
+                intent.putExtra(INTENT_EXTRA_STEP_KEY, newStep);
+                intent.putExtra(INTENT_EXTRA_PLACE_KEY, checkStepIdPlace(newStep));
                 startActivityForResult(intent, 123);
             }
         }
@@ -161,10 +173,22 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     public void onStepSelected(Step step) {
+        mLastStepClicked = step;
         StepFragment newStepFragment = new StepFragment();
         newStepFragment.setStepInfo(step);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.step_frag_frame_layout, newStepFragment).commit();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(INSTANCE_STATE_KEY, mLastStepClicked);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
+    }
 }

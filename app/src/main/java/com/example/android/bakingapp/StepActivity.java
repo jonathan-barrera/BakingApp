@@ -1,6 +1,9 @@
 package com.example.android.bakingapp;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ConfigurationInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -9,6 +12,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Step;
@@ -28,6 +32,7 @@ import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 public class StepActivity extends AppCompatActivity {
 
@@ -47,6 +52,9 @@ public class StepActivity extends AppCompatActivity {
     private PlaybackStateCompat.Builder mStateBuilder;
     private SimpleExoPlayer mExoPlayer;
 
+    public static final String INTENT_EXTRA_CURRENT_ID_KEY = "current-id";
+    private static final String INSTANCE_STATE_EXO_POSITION_KEY = "exo-player-position";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,22 +64,22 @@ public class StepActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         // Get the Step object
-        mCurrentStep = getIntent().getParcelableExtra("Step");
+        mCurrentStep = getIntent().getParcelableExtra(RecipeActivity.INTENT_EXTRA_STEP_KEY);
 
         // Set the title in the action bar
         setTitle(mCurrentStep.getShortDescription());
 
         // Get the placement
-        mPlace = getIntent().getStringExtra("Place");
+        mPlace = getIntent().getStringExtra(RecipeActivity.INTENT_EXTRA_PLACE_KEY);
 
-        if (mPlace.equals("first")) {
+        if (mPlace.equals(RecipeActivity.PLACE_ID_FIRST)) {
             mPreviousButton.setVisibility(View.INVISIBLE);
-        } else if (mPlace.equals("last")) {
+        } else if (mPlace.equals(RecipeActivity.PLACE_ID_LAST)) {
             mNextButton.setVisibility(View.INVISIBLE);
         }
 
         // Set the description (extract data from Step object)
-        mStepDescTextView.setText(mCurrentStep.getDescription());
+        mStepDescTextView.setText(mCurrentStep.getDescription());//mStepDescTextView.setText("Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?");
 
         // Extract Videolink from the CurrentStep object
         String videoUrlString = mCurrentStep.getVideoURL();
@@ -82,6 +90,12 @@ public class StepActivity extends AppCompatActivity {
 
             // Initialize the player.
             initializePlayer(Uri.parse(videoUrlString));
+
+            // If the mobile is in landscape mode, only show the video
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                RelativeLayout relativeLayout = findViewById(R.id.step_activity_relative_layout);
+                relativeLayout.setVisibility(View.GONE);
+            }
         } else {
             mPlayerView.setVisibility(View.GONE);
             // If there is no video, then set the thumbnail image
@@ -91,13 +105,10 @@ public class StepActivity extends AppCompatActivity {
                     Picasso.with(this)
                             .load(thumbnailUrlString)
                             .into(mStepImageView);
+                    mStepImageView.setVisibility(View.VISIBLE);
                 } catch (Exception e) {
-                    // If there is a problem, set image view to gone
-                    mStepImageView.setVisibility(View.GONE);
+                    e.printStackTrace();
                 }
-            } else {
-                // if there is no link, set image view to gone
-                mStepImageView.setVisibility(View.GONE);
             }
         }
     }
@@ -121,7 +132,7 @@ public class StepActivity extends AppCompatActivity {
     private Intent createChangeStepsIntent() {
         Intent intent = new Intent(this, RecipeActivity.class);
         int id = mCurrentStep.getId();
-        intent.putExtra("currentId", id);
+        intent.putExtra(INTENT_EXTRA_CURRENT_ID_KEY, id);
         return intent;
     }
 
@@ -201,7 +212,7 @@ public class StepActivity extends AppCompatActivity {
             //mExoPlayer.addListener(this);
 
             // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(this, "BakingApp");
+            String userAgent = Util.getUserAgent(this, getString(R.string.baking_app));
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     this, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
@@ -222,7 +233,7 @@ public class StepActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        long position = savedInstanceState.getLong("ExoPlayerPosition");
+        long position = savedInstanceState.getLong(INSTANCE_STATE_EXO_POSITION_KEY);
         mExoPlayer.seekTo(position);
         mExoPlayer.setPlayWhenReady(true);
     }
@@ -232,6 +243,6 @@ public class StepActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         long position = mExoPlayer.getCurrentPosition();
-        outState.putLong("ExoPlayerPosition", position);
+        outState.putLong(INSTANCE_STATE_EXO_POSITION_KEY, position);
     }
 }

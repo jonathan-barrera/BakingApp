@@ -2,4 +2,10 @@
     <string name="app_name">BakingApp</string>
     <string name="title_activity_recipe">RecipeActivity</string>
     <string name="ingredients">Ingredients:</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="recipes">Recipes</string>
+    <string name="json_download_failed">JSON download failed.</string>
+    <string name="servings">servings</string>
+    <string name="baking_app">BakingApp</string>
 </resources>

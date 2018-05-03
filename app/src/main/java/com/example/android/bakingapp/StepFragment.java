@@ -9,6 +9,8 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Step;
@@ -24,6 +26,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.squareup.picasso.Picasso;
 
 import timber.log.Timber;
 
@@ -34,18 +37,19 @@ public class StepFragment extends Fragment {
     private PlaybackStateCompat.Builder mStateBuilder;
     private SimpleExoPlayer mExoPlayer;
     private SimpleExoPlayerView mPlayerView;
+    private ImageView mStepImageView;
 
     public StepFragment(){}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Timber.d("step fragment oncreate called");
         // Inflate the layout
         View rootView = inflater.inflate(R.layout.fragment_step, container, false);
 
-        // Get a reference to the Step Description textview and Video exoplayer
+        // Get a reference to the Step Description textview, Video exoplayer, and step image view
         TextView stepDescription = rootView.findViewById(R.id.step_frag_desc_text_view);
         mPlayerView = rootView.findViewById(R.id.exo_player_view_frag);
+        mStepImageView = rootView.findViewById(R.id.step_image_view_frag);
 
         // Get the Video information from the Step object and set to ExoPlayer
         if (mCurrentStep != null) {
@@ -58,6 +62,18 @@ public class StepFragment extends Fragment {
                 initializePlayer(Uri.parse(videoUrlString));
             } else {
                 mPlayerView.setVisibility(View.GONE);
+                // If there is no video, then set the thumbnail image
+                String thumbnailUrlString = mCurrentStep.getThumbnailURL();
+                if (!thumbnailUrlString.equals("")) {
+                    try {
+                        Picasso.with(getContext())
+                                .load(thumbnailUrlString)
+                                .into(mStepImageView);
+                        mStepImageView.setVisibility(View.VISIBLE);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             // Set the description to the text view
@@ -142,7 +158,7 @@ public class StepFragment extends Fragment {
             mPlayerView.setPlayer(mExoPlayer);
 
             // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(getContext(), "BakingApp");
+            String userAgent = Util.getUserAgent(getContext(), getString(R.string.baking_app));
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);

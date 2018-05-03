@@ -67,7 +67,7 @@ public class RecipeFragment extends Fragment {
         mRecyclerView.setAdapter(mStepAdapter);
 
         // Get the Recipe object
-        mRecipe = getActivity().getIntent().getParcelableExtra("Recipe");
+        mRecipe = getActivity().getIntent().getParcelableExtra(MainActivity.INTENT_EXTRA_RECIPE_KEY);
 
         // Extract the Ingredient object from the Recipe object
         mIngredientList = mRecipe.getIngredients();
