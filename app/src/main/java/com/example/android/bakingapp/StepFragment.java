@@ -47,16 +47,7 @@ public class StepFragment extends Fragment {
         TextView stepDescription = rootView.findViewById(R.id.step_frag_desc_text_view);
         mPlayerView = rootView.findViewById(R.id.exo_player_view_frag);
 
-//        // Get the Step object
-//        if (getActivity().getIntent().hasExtra("Step")) {
-//            mCurrentStep = getActivity().getIntent().getParcelableExtra("Step");
-//        } else {
-//            getActivity().finish();
-//            Timber.d("error get Step object");
-//        }
-//
-//        mCurrentStep = getActivity().getIntent().getParcelableExtra("Step");
-
+        // Get the Video information from the Step object and set to ExoPlayer
         if (mCurrentStep != null) {
             String videoUrlString = mCurrentStep.getVideoURL();
             if (videoUrlString != null && !videoUrlString.equals("")) {
@@ -80,7 +71,6 @@ public class StepFragment extends Fragment {
     }
 
     private void initializeMediaSession() {
-
         // Create a MediaSessionCompat.
         mMediaSession = new MediaSessionCompat(getContext(), MainActivity.class.getSimpleName());
 
@@ -131,9 +121,10 @@ public class StepFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         releasePlayer();
-        mMediaSession.setActive(false);
+        if (mMediaSession != null) mMediaSession.setActive(false);
     }
 
+    // Release exo player (call this when fragment is destroyed)
     private void releasePlayer() {
         if (mExoPlayer != null) {
             mExoPlayer.stop();
@@ -149,9 +140,6 @@ public class StepFragment extends Fragment {
             LoadControl loadControl = new DefaultLoadControl();
             mExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
             mPlayerView.setPlayer(mExoPlayer);
-
-            // Set the ExoPlayer.EventListener to this activity.
-            //mExoPlayer.addListener(this);
 
             // Prepare the MediaSource.
             String userAgent = Util.getUserAgent(getContext(), "BakingApp");

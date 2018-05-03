@@ -4,10 +4,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Recipe;
 import com.example.android.bakingapp.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -45,6 +47,21 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
         Recipe currentRecipe = mRecipeData.get(position);
         String recipeName = currentRecipe.getName();
         holder.mRecipeNameTextView.setText(recipeName);
+
+        // Try to get the image for the recipe. If no image, or if image Picasso cannot load,
+        // set the imageview to gone
+        String recipeImageLink = currentRecipe.getImage();
+        if (!recipeImageLink.equals("")) {
+            try {
+                Picasso.with(holder.mRecipeImageView.getContext())
+                        .load(recipeImageLink)
+                        .into(holder.mRecipeImageView);
+            } catch (Exception e) {
+                holder.mRecipeImageView.setVisibility(View.GONE);
+            }
+        } else {
+            holder.mRecipeImageView.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -63,6 +80,8 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
 
         @BindView(R.id.recipe_name_text_view)
         TextView mRecipeNameTextView;
+        @BindView(R.id.recipe_image_view)
+        ImageView mRecipeImageView;
 
         public RecipeAdapterViewHolder(View itemView) {
             super(itemView);

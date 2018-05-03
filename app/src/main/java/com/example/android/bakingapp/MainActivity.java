@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.ImageView;
 
 import com.example.android.bakingapp.Adapters.RecipeAdapter;
 import com.example.android.bakingapp.ApiUtils.ApiClient;
@@ -24,8 +25,7 @@ import timber.log.Timber;
 public class MainActivity extends AppCompatActivity
         implements RecipeAdapter.RecipeAdapterOnClickHandler{
 
-    RecyclerView mRecyclerView;
-
+    private RecyclerView mRecyclerView;
     private RecipeAdapter mRecipeAdapter;
 
     @Override

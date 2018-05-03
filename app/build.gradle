@@ -47,4 +47,7 @@ dependencies {
 
     // Dependency for ExoPLayer
     implementation 'com.google.android.exoplayer:exoplayer:r2.2.0'
+
+    // Dependency for Picasso
+    implementation 'com.squareup.picasso:picasso:2.5.2'
 }

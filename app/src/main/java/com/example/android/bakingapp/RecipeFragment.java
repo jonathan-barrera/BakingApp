@@ -103,19 +103,4 @@ public class RecipeFragment extends Fragment {
 
         return rootView;
     }
-
-    public void openStepFragment(Step step) {
-        StepFragment newStepFragment = new StepFragment();
-        newStepFragment.setStepInfo(step);
-    }
-
-//    @Override
-//    public void onClick(Step step) {
-//        Intent intent = new Intent(getActivity(), StepActivity.class);
-//        String place = checkStepIdPlace(step);
-//        intent.putExtra("Step", step);
-//        intent.putExtra("Place", place);
-//        startActivityForResult(intent, 123);
-//   }
-
 }

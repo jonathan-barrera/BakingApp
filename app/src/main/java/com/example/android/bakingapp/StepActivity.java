@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Step;
@@ -23,6 +24,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,12 +37,15 @@ public class StepActivity extends AppCompatActivity {
     Button mPreviousButton;
     @BindView(R.id.next_button)
     Button mNextButton;
+    @BindView(R.id.step_image_view)
+    ImageView mStepImageView;
+    @BindView(R.id.exo_player_view)
+    SimpleExoPlayerView mPlayerView;
     private Step mCurrentStep;
     private String mPlace;
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
     private SimpleExoPlayer mExoPlayer;
-    private SimpleExoPlayerView mPlayerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +54,6 @@ public class StepActivity extends AppCompatActivity {
 
         // Bind views with Butterknife
         ButterKnife.bind(this);
-
-        // Initialize the player view.
-        mPlayerView = findViewById(R.id.exo_player_view);
 
         // Get the Step object
         mCurrentStep = getIntent().getParcelableExtra("Step");
@@ -82,8 +84,22 @@ public class StepActivity extends AppCompatActivity {
             initializePlayer(Uri.parse(videoUrlString));
         } else {
             mPlayerView.setVisibility(View.GONE);
+            // If there is no video, then set the thumbnail image
+            String thumbnailUrlString = mCurrentStep.getThumbnailURL();
+            if (!thumbnailUrlString.equals("")) {
+                try {
+                    Picasso.with(this)
+                            .load(thumbnailUrlString)
+                            .into(mStepImageView);
+                } catch (Exception e) {
+                    // If there is a problem, set image view to gone
+                    mStepImageView.setVisibility(View.GONE);
+                }
+            } else {
+                // if there is no link, set image view to gone
+                mStepImageView.setVisibility(View.GONE);
+            }
         }
-
     }
 
     // Create method to take the user to the next step
@@ -164,9 +180,7 @@ public class StepActivity extends AppCompatActivity {
         if (mMediaSession != null) mMediaSession.setActive(false);
     }
 
-    /**
-     * Release ExoPlayer.
-     */
+    // Release exoplayer (call this when the activity is destroyed)
     private void releasePlayer() {
         if (mExoPlayer != null) {
             mExoPlayer.stop();
