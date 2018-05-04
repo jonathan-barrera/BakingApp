@@ -53,7 +53,8 @@ public class StepActivity extends AppCompatActivity {
     private SimpleExoPlayer mExoPlayer;
 
     public static final String INTENT_EXTRA_CURRENT_ID_KEY = "current-id";
-    private static final String INSTANCE_STATE_EXO_POSITION_KEY = "exo-player-position";
+    private static final String INSTANCE_STATE_EXO_POSITION_KEY = "exo-player-position-key";
+    private static final String INSTANCE_STATE_EXO_PLAYING_KEY = "exo-playing-key";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -229,20 +230,25 @@ public class StepActivity extends AppCompatActivity {
         }
     }
 
-    // After rotation, continue playing video
+    // After rotation, have the video position set back to where it was before.
+    // Additionally, if the video was playing before, it should keep playing.
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         long position = savedInstanceState.getLong(INSTANCE_STATE_EXO_POSITION_KEY);
+        boolean isPlaying = savedInstanceState.getBoolean(INSTANCE_STATE_EXO_PLAYING_KEY);
         mExoPlayer.seekTo(position);
-        mExoPlayer.setPlayWhenReady(true);
+        mExoPlayer.setPlayWhenReady(isPlaying);
     }
 
     // Save the position of the video on rotate
+    // Also save if the video was playing or not
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         long position = mExoPlayer.getCurrentPosition();
+        boolean isPlaying = mExoPlayer.getPlayWhenReady();
         outState.putLong(INSTANCE_STATE_EXO_POSITION_KEY, position);
+        outState.putBoolean(INSTANCE_STATE_EXO_PLAYING_KEY, isPlaying);
     }
 }
