@@ -17,13 +17,18 @@ import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Step;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -54,7 +59,8 @@ public class StepActivity extends AppCompatActivity {
 
     public static final String INTENT_EXTRA_CURRENT_ID_KEY = "current-id";
     private static final String INSTANCE_STATE_EXO_POSITION_KEY = "exo-player-position-key";
-    private static final String INSTANCE_STATE_EXO_PLAYING_KEY = "exo-playing-key";
+
+    // TODO save scroll position
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +86,7 @@ public class StepActivity extends AppCompatActivity {
         }
 
         // Set the description (extract data from Step object)
-        mStepDescTextView.setText(mCurrentStep.getDescription());//mStepDescTextView.setText("Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?");
+        mStepDescTextView.setText(mCurrentStep.getDescription());
 
         // Extract Videolink from the CurrentStep object
         String videoUrlString = mCurrentStep.getVideoURL();
@@ -138,7 +144,6 @@ public class StepActivity extends AppCompatActivity {
     }
 
     private void initializeMediaSession() {
-
         // Create a MediaSessionCompat.
         mMediaSession = new MediaSessionCompat(this, MainActivity.class.getSimpleName());
 
@@ -209,9 +214,6 @@ public class StepActivity extends AppCompatActivity {
             mExoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
             mPlayerView.setPlayer(mExoPlayer);
 
-            // Set the ExoPlayer.EventListener to this activity.
-            //mExoPlayer.addListener(this);
-
             // Prepare the MediaSource.
             String userAgent = Util.getUserAgent(this, getString(R.string.baking_app));
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
@@ -230,25 +232,25 @@ public class StepActivity extends AppCompatActivity {
         }
     }
 
+
+
     // After rotation, have the video position set back to where it was before.
-    // Additionally, if the video was playing before, it should keep playing.
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        long position = savedInstanceState.getLong(INSTANCE_STATE_EXO_POSITION_KEY);
-        boolean isPlaying = savedInstanceState.getBoolean(INSTANCE_STATE_EXO_PLAYING_KEY);
-        mExoPlayer.seekTo(position);
-        mExoPlayer.setPlayWhenReady(isPlaying);
+        if (mExoPlayer != null) {
+            long position = savedInstanceState.getLong(INSTANCE_STATE_EXO_POSITION_KEY);
+            mExoPlayer.seekTo(position);
+        }
     }
 
-    // Save the position of the video on rotate
-    // Also save if the video was playing or not
+    // Save the position of the video on rotate or loss of focus
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        long position = mExoPlayer.getCurrentPosition();
-        boolean isPlaying = mExoPlayer.getPlayWhenReady();
-        outState.putLong(INSTANCE_STATE_EXO_POSITION_KEY, position);
-        outState.putBoolean(INSTANCE_STATE_EXO_PLAYING_KEY, isPlaying);
+        if (mExoPlayer != null) {
+            long position = mExoPlayer.getCurrentPosition();
+            outState.putLong(INSTANCE_STATE_EXO_POSITION_KEY, position);
+        }
     }
 }
