@@ -1,6 +1,8 @@
 package com.example.android.bakingapp;
 
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +34,7 @@ public class RecipeActivity extends AppCompatActivity
     public static final String PLACE_ID_FIRST = "place-first";
     public static final String PLACE_ID_MIDDLE = "place-middle";
     public static final String PLACE_ID_LAST = "place-last";
+    private static final String RECYCLER_VIEW_STATE_KEY = "recycler-view-state-key";
 
     // member variables
     private RecyclerView mRecyclerView;
@@ -39,6 +42,7 @@ public class RecipeActivity extends AppCompatActivity
     private Recipe mRecipe;
     private List<Ingredient> mIngredientList;
     private Step mLastStepClicked;
+ //   private Parcelable mRecyclerViewState;
 
     View stepFragmentView;
 
@@ -130,6 +134,8 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     public void onClick(Step step) {
+        // Use intent to open the StepActivity, and pass on the clicked on Step information
+        // Also pass on the place (is the step first, last, or middle?)
         Intent intent = new Intent(this, StepActivity.class);
         String place = checkStepIdPlace(step);
         intent.putExtra(INTENT_EXTRA_STEP_KEY, step);
@@ -152,15 +158,17 @@ public class RecipeActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // Get the id of the last step seen
+        // Get the id of the last step the user viewed
         if (data != null) {
             int stepId = data.getIntExtra(StepActivity.INTENT_EXTRA_CURRENT_ID_KEY, -1);
             if (stepId > -1) {
                 Step newStep;
                 if (resultCode == 101) {
+                    // User clicked the "next" button
                     newStep = mRecipe.getSteps().get(stepId + 1);
                 } else {
                     // resultCode == 102
+                    // User clicked the "previous" button
                     newStep = mRecipe.getSteps().get(stepId - 1);
                 }
                 Intent intent = new Intent(this, StepActivity.class);
@@ -173,6 +181,8 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     public void onStepSelected(Step step) {
+        // Method used in Tablet Landscape orientation. Chooses the appropriate Step object
+        // to show in the step info fragment
         mLastStepClicked = step;
         StepFragment newStepFragment = new StepFragment();
         newStepFragment.setStepInfo(step);
@@ -189,6 +199,8 @@ public class RecipeActivity extends AppCompatActivity
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
+        if (savedInstanceState != null) {
+            mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
+        }
     }
 }

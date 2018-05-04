@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
@@ -36,8 +37,10 @@ public class MainActivity extends AppCompatActivity
 
     private RecyclerView mRecyclerView;
     private RecipeAdapter mRecipeAdapter;
+    private Parcelable mRecyclerViewSavedState;
 
     public static final String INTENT_EXTRA_RECIPE_KEY = "Recipe";
+    public static final String RECYCLER_VIEW_POSITION_KEY = "recycler-view-position-key";
 
     // The Idling Resource which will be null in production.
     @Nullable
@@ -86,6 +89,11 @@ public class MainActivity extends AppCompatActivity
         // Initialize Adapter and set to Recyclerview
         mRecipeAdapter = new RecipeAdapter(this);
         mRecyclerView.setAdapter(mRecipeAdapter);
+
+        // Set RecyclerView to savedinstance position (if it exists)
+        if (mRecyclerViewSavedState != null) {
+            mRecyclerView.getLayoutManager().onRestoreInstanceState(mRecyclerViewSavedState);
+        }
 
         // Create idling resource
         if (mIdlingResource != null) {
@@ -149,8 +157,23 @@ public class MainActivity extends AppCompatActivity
             builder.append(ingredient.getIngredient() + "; ");
         }
         // Get rid of the last "; "
-        builder.delete(builder.length() - 1, builder.length());
+        builder.delete(builder.length() - 2, builder.length());
 
         return builder.toString();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(RECYCLER_VIEW_POSITION_KEY,
+                mRecyclerView.getLayoutManager().onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null) {
+            mRecyclerViewSavedState = savedInstanceState.getParcelable(RECYCLER_VIEW_POSITION_KEY);
+        }
     }
 }

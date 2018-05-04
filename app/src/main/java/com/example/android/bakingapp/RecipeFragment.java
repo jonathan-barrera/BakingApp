@@ -85,7 +85,7 @@ public class RecipeFragment extends Fragment {
             ingredients.add(ingredient.getIngredient());
         }
 
-        // Create one String to hold all of the ingredient information in this list
+        // Create one String to hold all of the ingredients information in this list
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < quantities.size(); i++) {
             stringBuilder.append(quantities.get(i) + " " +

@@ -65,6 +65,7 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
     }
 
 
+    // View holder for StepAdapter recyclerview
     public class StepAdapterViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener{
 
@@ -80,6 +81,7 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
 
         @Override
         public void onClick(View view) {
+            // Get step that was clicked on
             int position = getAdapterPosition();
             Step step = mStepData.get(position);
             mClickHandler.onClick(step);

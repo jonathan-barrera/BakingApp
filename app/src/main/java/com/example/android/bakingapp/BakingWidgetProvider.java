@@ -13,12 +13,13 @@ import timber.log.Timber;
  */
 public class BakingWidgetProvider extends AppWidgetProvider {
 
+    // Keys
     public static final String WIDGET_RECIPE_PREF_KEY = "widget-recipe";
     public static final String INGREDIENT_PREF_KEY = "ingredient";
 
-    // Set the default ingredients list as Nutella Pie. This will change once the user use's the app.
+    // Set the default ingredients list as Nutella Pie. This will change once the user uses the app.
     public static final String DEFAULT_INGREDIENTS = "Nutella Pie:\n" +
-            "Graham Cracker crumbs; unsalted butter, melted; granulated sugar; salt; vanilla; Nutella or other chocolate-hazelnut spread; Mascapone Cheese(room temperature); heavy cream(cold); cream cheese(softened);";
+            "Graham Cracker crumbs; unsalted butter, melted; granulated sugar; salt; vanilla; Nutella or other chocolate-hazelnut spread; Mascapone Cheese(room temperature); heavy cream(cold); cream cheese(softened)";
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {

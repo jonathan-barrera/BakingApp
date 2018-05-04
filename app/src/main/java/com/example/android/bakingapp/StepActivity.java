@@ -41,6 +41,7 @@ import timber.log.Timber;
 
 public class StepActivity extends AppCompatActivity {
 
+    // Views
     @BindView(R.id.step_desc_text_view)
     TextView mStepDescTextView;
     @BindView(R.id.previous_button)
@@ -51,16 +52,17 @@ public class StepActivity extends AppCompatActivity {
     ImageView mStepImageView;
     @BindView(R.id.exo_player_view)
     SimpleExoPlayerView mPlayerView;
+
+    // Member Variables
     private Step mCurrentStep;
     private String mPlace;
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
     private SimpleExoPlayer mExoPlayer;
 
+    // Keys
     public static final String INTENT_EXTRA_CURRENT_ID_KEY = "current-id";
     private static final String INSTANCE_STATE_EXO_POSITION_KEY = "exo-player-position-key";
-
-    // TODO save scroll position
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -206,6 +208,7 @@ public class StepActivity extends AppCompatActivity {
         }
     }
 
+    // Method for initializing the ExoPlayer.
     private void initializePlayer(Uri mediaUri) {
         if (mExoPlayer == null) {
             // Create an instance of the ExoPlayer.
@@ -219,10 +222,13 @@ public class StepActivity extends AppCompatActivity {
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     this, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
+
+            // Don't start playing video immediately
             mExoPlayer.setPlayWhenReady(false);
         }
     }
 
+    // Pause the video if the activity loses focus
     @Override
     protected void onPause() {
         super.onPause();
@@ -233,14 +239,15 @@ public class StepActivity extends AppCompatActivity {
     }
 
 
-
     // After rotation, have the video position set back to where it was before.
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (mExoPlayer != null) {
-            long position = savedInstanceState.getLong(INSTANCE_STATE_EXO_POSITION_KEY);
-            mExoPlayer.seekTo(position);
+        if (savedInstanceState != null) {
+            if (mExoPlayer != null) {
+                long position = savedInstanceState.getLong(INSTANCE_STATE_EXO_POSITION_KEY);
+                mExoPlayer.seekTo(position);
+            }
         }
     }
 

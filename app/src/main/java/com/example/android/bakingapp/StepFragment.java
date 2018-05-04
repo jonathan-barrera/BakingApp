@@ -32,9 +32,12 @@ import timber.log.Timber;
 
 public class StepFragment extends Fragment {
 
+    // Member Variables
     private Step mCurrentStep;
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
+
+    // Views
     private SimpleExoPlayer mExoPlayer;
     private SimpleExoPlayerView mPlayerView;
     private ImageView mStepImageView;

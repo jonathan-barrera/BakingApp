@@ -74,7 +74,7 @@ public class MainActivityTests {
     }
 
     @Test
-    public void clickOnNextStep_OpenNextStepActivity() {
+    public void clickOnNextStepButton_OpenNextStepActivity() {
         // Perform click on first recipe
         //onData(anything()).inAdapterView(withId(R.id.recipe_recycler_view)).atPosition(0).perform(click());
         onView(withId(R.id.recipe_recycler_view)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -90,7 +90,7 @@ public class MainActivityTests {
     }
 
     @Test
-    public void clickOnPreviousStep_OpenPreviousStepActivity() {
+    public void clickOnPreviousStepButton_OpenPreviousStepActivity() {
         // Perform click on first recipe
         //onData(anything()).inAdapterView(withId(R.id.recipe_recycler_view)).atPosition(0).perform(click());
         onView(withId(R.id.recipe_recycler_view)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));

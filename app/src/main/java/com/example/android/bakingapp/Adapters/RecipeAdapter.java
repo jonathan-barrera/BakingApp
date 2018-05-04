@@ -74,7 +74,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
         }
     }
 
-
+    // Create the view holder that will be used in the recycler view
     public class RecipeAdapterViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener{
 
@@ -92,6 +92,8 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
 
         @Override
         public void onClick(View view) {
+            // Get the Recipe object from the position that was clicked on and use this as a
+            // parameter in onClick
             int position = getAdapterPosition();
             Recipe recipe = mRecipeData.get(position);
             mClickHandler.onClick(recipe);
