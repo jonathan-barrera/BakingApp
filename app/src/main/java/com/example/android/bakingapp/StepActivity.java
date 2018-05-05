@@ -9,6 +9,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -59,13 +60,18 @@ public class StepActivity extends AppCompatActivity {
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
     private SimpleExoPlayer mExoPlayer;
+    private boolean mIsVideoPlaying;
+    private String mVideoUrlString;
+    private long mVideoPosition;
 
     // Keys
     public static final String INTENT_EXTRA_CURRENT_ID_KEY = "current-id";
     private static final String INSTANCE_STATE_EXO_POSITION_KEY = "exo-player-position-key";
+    private static final String INSTANCE_STATE_VIDEO_PLAYING_KEY = "video-playing-boolean-key";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Timber.d("oncreate called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step);
 
@@ -91,14 +97,19 @@ public class StepActivity extends AppCompatActivity {
         mStepDescTextView.setText(mCurrentStep.getDescription());
 
         // Extract Videolink from the CurrentStep object
-        String videoUrlString = mCurrentStep.getVideoURL();
+        mVideoUrlString = mCurrentStep.getVideoURL();
 
-        if (videoUrlString != null && !videoUrlString.equals("")) {
+        if (!TextUtils.isEmpty(mVideoUrlString)) {
+            // Check if the video was playing and needs to keep playing
+            if (savedInstanceState != null) {
+                mIsVideoPlaying = savedInstanceState.getBoolean(INSTANCE_STATE_VIDEO_PLAYING_KEY);
+            }
+
             // Initialize the Media Session.
             initializeMediaSession();
 
             // Initialize the player.
-            initializePlayer(Uri.parse(videoUrlString));
+            initializePlayer(Uri.parse(mVideoUrlString));
 
             // If the mobile is in landscape mode, only show the video
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -179,11 +190,14 @@ public class StepActivity extends AppCompatActivity {
         @Override
         public void onPlay() {
             mExoPlayer.setPlayWhenReady(true);
+            mIsVideoPlaying = true;
+            Timber.d("onplay is called");
         }
 
         @Override
         public void onPause() {
             mExoPlayer.setPlayWhenReady(false);
+            mIsVideoPlaying = false;
         }
 
         @Override
@@ -193,14 +207,15 @@ public class StepActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         releasePlayer();
         if (mMediaSession != null) mMediaSession.setActive(false);
     }
 
-    // Release exoplayer (call this when the activity is destroyed)
+    // Release exoplayer (call this when the activity stopped)
     private void releasePlayer() {
+        Timber.d("release player called");
         if (mExoPlayer != null) {
             mExoPlayer.stop();
             mExoPlayer.release();
@@ -210,6 +225,7 @@ public class StepActivity extends AppCompatActivity {
 
     // Method for initializing the ExoPlayer.
     private void initializePlayer(Uri mediaUri) {
+        Timber.d("initialize player called");
         if (mExoPlayer == null) {
             // Create an instance of the ExoPlayer.
             TrackSelector trackSelector = new DefaultTrackSelector();
@@ -223,25 +239,90 @@ public class StepActivity extends AppCompatActivity {
                     this, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
 
-            // Don't start playing video immediately
-            mExoPlayer.setPlayWhenReady(false);
+            // Use the member variable to determine if the video should be playing
+            mExoPlayer.setPlayWhenReady(mIsVideoPlaying);
+
+            // Add listener to log when the Exoplayer is playing or pause
+            mExoPlayer.addListener(new ExoPlayer.EventListener() {
+                @Override
+                public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+                }
+
+                @Override
+                public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+                }
+
+                @Override
+                public void onLoadingChanged(boolean isLoading) {
+
+                }
+
+                @Override
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                    // TODO simplify this
+                    switch (String.valueOf(playWhenReady)) {
+                        case "true":
+                            mIsVideoPlaying = true;
+                            Timber.d("misviedoplaying set to true");
+                            break;
+                        default:
+                            mIsVideoPlaying = false;
+                    }
+                }
+
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+
+                }
+
+                @Override
+                public void onPositionDiscontinuity() {
+
+                }
+            });
         }
     }
 
-    // Pause the video if the activity loses focus
+    // Momentarily pause the video if the activity partially loses focus
     @Override
     protected void onPause() {
+        Timber.d("on pause called");
         super.onPause();
         if (mExoPlayer != null) {
-            // pause the video if the app loses focus
-            mExoPlayer.setPlayWhenReady(false);
+            if (mIsVideoPlaying) {
+                // pause the video if the app loses focus
+                mExoPlayer.setPlayWhenReady(false);
+                mIsVideoPlaying = true;
+                mVideoPosition = mExoPlayer.getCurrentPosition();
+            }
         }
     }
 
+    // Have the video keep playing in onresume
+    @Override
+    protected void onResume() {
+        Timber.d("onresume called");
+        super.onResume();
+
+        initializePlayer(Uri.parse(mVideoUrlString));
+        if (mMediaSession != null) mMediaSession.setActive(true);
+        else initializeMediaSession();
+
+        if (mExoPlayer != null) {
+            mExoPlayer.setPlayWhenReady(mIsVideoPlaying);
+        }
+
+        if (mVideoPosition != 0) {
+            mExoPlayer.seekTo(mVideoPosition);
+        }
+    }
 
     // After rotation, have the video position set back to where it was before.
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Timber.d("onresoteinstance called");
         super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState != null) {
             if (mExoPlayer != null) {
@@ -254,10 +335,13 @@ public class StepActivity extends AppCompatActivity {
     // Save the position of the video on rotate or loss of focus
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Timber.d("onsaveinstance called");
         super.onSaveInstanceState(outState);
         if (mExoPlayer != null) {
             long position = mExoPlayer.getCurrentPosition();
             outState.putLong(INSTANCE_STATE_EXO_POSITION_KEY, position);
+            Timber.d(String.valueOf(mIsVideoPlaying));
+            outState.putBoolean(INSTANCE_STATE_VIDEO_PLAYING_KEY, mIsVideoPlaying);
         }
     }
 }

@@ -15,13 +15,18 @@ import android.widget.TextView;
 
 import com.example.android.bakingapp.Models.Step;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -36,6 +41,8 @@ public class StepFragment extends Fragment {
     private Step mCurrentStep;
     private static MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
+    private long mVideoPosition;
+    private boolean mIsVideoPlaying;
 
     // Views
     private SimpleExoPlayer mExoPlayer;
@@ -89,6 +96,11 @@ public class StepFragment extends Fragment {
         mCurrentStep = step;
     }
 
+    public void setVideoPosition(long videoPosition, boolean isPlaying) {
+        mVideoPosition = videoPosition;
+        mIsVideoPlaying = isPlaying;
+    }
+
     private void initializeMediaSession() {
         // Create a MediaSessionCompat.
         mMediaSession = new MediaSessionCompat(getContext(), MainActivity.class.getSimpleName());
@@ -138,7 +150,9 @@ public class StepFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        Timber.d("ondestroyview frag");
         super.onDestroyView();
+
         releasePlayer();
         if (mMediaSession != null) mMediaSession.setActive(false);
     }
@@ -165,16 +179,65 @@ public class StepFragment extends Fragment {
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
-            mExoPlayer.setPlayWhenReady(false);
+
+            // Set to correct position
+            mExoPlayer.seekTo(mVideoPosition);
+
+            // Play if it was playing before
+            mExoPlayer.setPlayWhenReady(mIsVideoPlaying);
+
+            mExoPlayer.addListener(new ExoPlayer.EventListener() {
+                @Override
+                public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+                }
+
+                @Override
+                public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+                }
+
+                @Override
+                public void onLoadingChanged(boolean isLoading) {
+
+                }
+
+                @Override
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                    if (playWhenReady) {
+                        mIsVideoPlaying = true;
+                    } else {
+                        mIsVideoPlaying = false;
+                    }
+                }
+
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+
+                }
+
+                @Override
+                public void onPositionDiscontinuity() {
+
+                }
+            });
         }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Timber.d("onpause frag");
+
+        // Save the video position
         if (mExoPlayer != null) {
-            // Pause the video if the app loses focus
-            mExoPlayer.setPlayWhenReady(false);
+            if (mIsVideoPlaying) {
+                mExoPlayer.setPlayWhenReady(false);
+                mIsVideoPlaying = true;
+                mVideoPosition = mExoPlayer.getCurrentPosition();
+                Timber.d(String.valueOf(mVideoPosition));
+                ((RecipeActivity) getActivity()).setFragVideoPosition(mVideoPosition, mIsVideoPlaying);
+            }
         }
     }
 }

@@ -24,17 +24,15 @@ import timber.log.Timber;
 public class RecipeActivity extends AppCompatActivity
         implements StepAdapter.StepAdapterOnClickHandler, RecipeFragment.onItemClickListener{
 
-    // boolean to keep track of whether we are on a phone or a table
-    private boolean mTwoPane;
-
     // Keys
+    private static final String INSTANCE_VIDEO_PLAYING_KEY = "video-playing-key";
+    private static final String INSTANCE_VIDEO_POSITION_KEY = "video-position-key";
     private static final String INSTANCE_STATE_KEY = "last-step";
     public static final String INTENT_EXTRA_STEP_KEY = "step-key";
     public static final String INTENT_EXTRA_PLACE_KEY = "place-key";
     public static final String PLACE_ID_FIRST = "place-first";
     public static final String PLACE_ID_MIDDLE = "place-middle";
     public static final String PLACE_ID_LAST = "place-last";
-    private static final String RECYCLER_VIEW_STATE_KEY = "recycler-view-state-key";
 
     // member variables
     private RecyclerView mRecyclerView;
@@ -42,7 +40,8 @@ public class RecipeActivity extends AppCompatActivity
     private Recipe mRecipe;
     private List<Ingredient> mIngredientList;
     private Step mLastStepClicked;
- //   private Parcelable mRecyclerViewState;
+    private long mVideoPosition;
+    private boolean mIsVideoPlaying;
 
     View stepFragmentView;
 
@@ -56,37 +55,42 @@ public class RecipeActivity extends AppCompatActivity
 
         // Set the title in the actionbar along with number of servings
         String title;
-        if (mRecipe.getServings().equals("")) {
+        if (mRecipe.getServings() == 0) {
             title = mRecipe.getName();
         } else {
             title = mRecipe.getName() + " (" + mRecipe.getServings() + getString(R.string.servings) + ")";
         }
         setTitle(title);
 
-        // If true, we are on a tablet in landscape mode
-        if (findViewById(R.id.step_frag_frame_layout) != null) {
-            mTwoPane = true;
+        // If true, we are on a tablet
+        if (getResources().getBoolean(R.bool.isTablet)) {
             stepFragmentView = findViewById(R.id.step_frag_frame_layout);
 
             // Create the Step fragment
             FragmentManager fragmentManager = getSupportFragmentManager();
             StepFragment stepFragment = new StepFragment();
 
+            //TODO work with mlaststepclicked as it should be step 0 by default
             // If possible, have the step fragment show the last viewed step
-            if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_STATE_KEY)) {
+            if (savedInstanceState != null) {
                 mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
-                stepFragment.setStepInfo(mLastStepClicked);
+                mVideoPosition = savedInstanceState.getLong(INSTANCE_VIDEO_POSITION_KEY);
+                mIsVideoPlaying = savedInstanceState.getBoolean(INSTANCE_VIDEO_PLAYING_KEY);
             } else {
                 // otherwise, show the first step by default
-                stepFragment.setStepInfo(mRecipe.getSteps().get(0));
+                mLastStepClicked = mRecipe.getSteps().get(0);
+                mVideoPosition = 0;
+                mIsVideoPlaying = false;
             }
+            Timber.d(String.valueOf(mVideoPosition) + "oncreate");
+            stepFragment.setStepInfo(mLastStepClicked);
+            stepFragment.setVideoPosition(mVideoPosition, mIsVideoPlaying);
             fragmentManager.beginTransaction()
                     .add(R.id.step_frag_frame_layout, stepFragment)
                     .commit();
 
         } else {
-            // We are on a phone or tablet in portrait mode
-            mTwoPane = false;
+            // We are on a phone
             // Get a reference to the recycler view
             mRecyclerView = findViewById(R.id.recipe_steps_recycler_view);
             mRecyclerView.setNestedScrollingEnabled(false);
@@ -181,7 +185,7 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     public void onStepSelected(Step step) {
-        // Method used in Tablet Landscape orientation. Chooses the appropriate Step object
+        // Method used in Tablet mode. Chooses the appropriate Step object
         // to show in the step info fragment
         mLastStepClicked = step;
         StepFragment newStepFragment = new StepFragment();
@@ -194,13 +198,22 @@ public class RecipeActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(INSTANCE_STATE_KEY, mLastStepClicked);
+        outState.putLong(INSTANCE_VIDEO_POSITION_KEY, mVideoPosition);
+        outState.putBoolean(INSTANCE_VIDEO_PLAYING_KEY, mIsVideoPlaying);
+        Timber.d(String.valueOf(mVideoPosition) + "onsaveinstance");
     }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null) {
-            mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
-        }
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        if (savedInstanceState != null) {
+//            mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
+//        }
+//    }
+
+    public void setFragVideoPosition(long position, boolean isPlaying) {
+        mVideoPosition = position;
+        mIsVideoPlaying = isPlaying;
+        Timber.d(String.valueOf(mVideoPosition) + "setfrag");
     }
 }

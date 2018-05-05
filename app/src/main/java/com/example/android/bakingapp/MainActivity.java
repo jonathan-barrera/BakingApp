@@ -15,6 +15,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.android.bakingapp.Adapters.RecipeAdapter;
 import com.example.android.bakingapp.ApiUtils.ApiClient;
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity
             mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         } else {
             mRecyclerView = findViewById(R.id.recipe_recycler_view_grid);
-            // We are looking at the table, make a grid view layout
+            // We are looking at the tablet, make a grid view layout
             GridLayoutManager layoutManager = new GridLayoutManager(this,
                     3, GridLayoutManager.VERTICAL, false);
             mRecyclerView.setLayoutManager(layoutManager);
@@ -120,6 +121,8 @@ public class MainActivity extends AppCompatActivity
             public void onFailure(Call<List<Recipe>> call, Throwable t) {
                 Timber.d(getString(R.string.json_download_failed));
                 Timber.d(t.toString());
+                Toast.makeText(getApplicationContext(), "Data failed to load.",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }

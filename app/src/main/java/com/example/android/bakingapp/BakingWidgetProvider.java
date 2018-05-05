@@ -32,7 +32,6 @@ public class BakingWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.baking_widget_provider);
         views.setTextViewText(R.id.appwidget_text, ingredientList);
-        Timber.d(ingredientList);
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
