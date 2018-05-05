@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,7 @@ public class StepFragment extends Fragment {
     private PlaybackStateCompat.Builder mStateBuilder;
     private long mVideoPosition;
     private boolean mIsVideoPlaying;
+    private String mVideoUrlString;
 
     // Views
     private SimpleExoPlayer mExoPlayer;
@@ -63,13 +65,13 @@ public class StepFragment extends Fragment {
 
         // Get the Video information from the Step object and set to ExoPlayer
         if (mCurrentStep != null) {
-            String videoUrlString = mCurrentStep.getVideoURL();
-            if (videoUrlString != null && !videoUrlString.equals("")) {
+            mVideoUrlString = mCurrentStep.getVideoURL();
+            if (!TextUtils.isEmpty(mVideoUrlString)) {
                 // Initialize the Media Session.
                 initializeMediaSession();
 
                 // Initialize the player.
-                initializePlayer(Uri.parse(videoUrlString));
+                initializePlayer(Uri.parse(mVideoUrlString));
             } else {
                 mPlayerView.setVisibility(View.GONE);
                 // If there is no video, then set the thumbnail image
@@ -150,7 +152,6 @@ public class StepFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        Timber.d("ondestroyview frag");
         super.onDestroyView();
 
         releasePlayer();
@@ -186,6 +187,8 @@ public class StepFragment extends Fragment {
             // Play if it was playing before
             mExoPlayer.setPlayWhenReady(mIsVideoPlaying);
 
+            // Put an event listener so that you can log when the exoplayer play/pause buttons
+            // have been pressed.
             mExoPlayer.addListener(new ExoPlayer.EventListener() {
                 @Override
                 public void onTimelineChanged(Timeline timeline, Object manifest) {
@@ -224,19 +227,40 @@ public class StepFragment extends Fragment {
         }
     }
 
+    // Pause the video upon losing focus
     @Override
     public void onPause() {
         super.onPause();
-        Timber.d("onpause frag");
 
-        // Save the video position
+        // Save the video position and playing status
         if (mExoPlayer != null) {
             if (mIsVideoPlaying) {
                 mExoPlayer.setPlayWhenReady(false);
                 mIsVideoPlaying = true;
                 mVideoPosition = mExoPlayer.getCurrentPosition();
-                Timber.d(String.valueOf(mVideoPosition));
                 ((RecipeActivity) getActivity()).setFragVideoPosition(mVideoPosition, mIsVideoPlaying);
+            }
+        }
+    }
+
+
+    // Resume playing the video when getting focus back
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (!TextUtils.isEmpty(mVideoUrlString)) {
+            initializePlayer(Uri.parse(mVideoUrlString));
+        }
+
+        if (mMediaSession != null) mMediaSession.setActive(true);
+        else initializeMediaSession();
+
+        if (mExoPlayer != null) {
+            mExoPlayer.setPlayWhenReady(mIsVideoPlaying);
+
+            if (mVideoPosition != 0) {
+                mExoPlayer.seekTo(mVideoPosition);
             }
         }
     }

@@ -70,7 +70,6 @@ public class RecipeActivity extends AppCompatActivity
             FragmentManager fragmentManager = getSupportFragmentManager();
             StepFragment stepFragment = new StepFragment();
 
-            //TODO work with mlaststepclicked as it should be step 0 by default
             // If possible, have the step fragment show the last viewed step
             if (savedInstanceState != null) {
                 mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
@@ -82,7 +81,6 @@ public class RecipeActivity extends AppCompatActivity
                 mVideoPosition = 0;
                 mIsVideoPlaying = false;
             }
-            Timber.d(String.valueOf(mVideoPosition) + "oncreate");
             stepFragment.setStepInfo(mLastStepClicked);
             stepFragment.setVideoPosition(mVideoPosition, mIsVideoPlaying);
             fragmentManager.beginTransaction()
@@ -200,20 +198,10 @@ public class RecipeActivity extends AppCompatActivity
         outState.putParcelable(INSTANCE_STATE_KEY, mLastStepClicked);
         outState.putLong(INSTANCE_VIDEO_POSITION_KEY, mVideoPosition);
         outState.putBoolean(INSTANCE_VIDEO_PLAYING_KEY, mIsVideoPlaying);
-        Timber.d(String.valueOf(mVideoPosition) + "onsaveinstance");
     }
-
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        if (savedInstanceState != null) {
-//            mLastStepClicked = savedInstanceState.getParcelable(INSTANCE_STATE_KEY);
-//        }
-//    }
 
     public void setFragVideoPosition(long position, boolean isPlaying) {
         mVideoPosition = position;
         mIsVideoPlaying = isPlaying;
-        Timber.d(String.valueOf(mVideoPosition) + "setfrag");
     }
 }

@@ -322,7 +322,6 @@ public class StepActivity extends AppCompatActivity {
     // After rotation, have the video position set back to where it was before.
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Timber.d("onresoteinstance called");
         super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState != null) {
             if (mExoPlayer != null) {
@@ -335,7 +334,6 @@ public class StepActivity extends AppCompatActivity {
     // Save the position of the video on rotate or loss of focus
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Timber.d("onsaveinstance called");
         super.onSaveInstanceState(outState);
         if (mExoPlayer != null) {
             long position = mExoPlayer.getCurrentPosition();
